@@ -59,7 +59,8 @@ var loadSaveButtons=React.createClass({
 		var content=this.context.getter("getcontent");
 		this.context.getter("save",{fn:this.state.fn,content},function(err){
 			action("saved");
-		});
+			this.setState({starttime:new Date(),elapse:0});
+		}.bind(this));
 	}
 	,onInput:function(e){
 		this.setState({fn:e.target.value});
@@ -70,7 +71,7 @@ var loadSaveButtons=React.createClass({
 		}
 	}
 	,updatetimer:function(){
-		this.setState({elapse: Math.floor((new Date()-this.state.starttime)/1000) });
+		this.setState({elapse: 1+Math.floor((new Date()-this.state.starttime)/1000) });
 	}
 	,render:function(){
 		if (this.props.preview)return E("span");
@@ -110,8 +111,7 @@ var Controls=React.createClass({
 		this.context.action("prevpage");
 	}
 	,render:function(){
-		return E("div",{style:{right:16,width:110,zIndex:100,
-			background:"silver",position:"absolute"}},
+		return E("div",{style:styles.container},
 			E("div",{},E("span",{style:styles.note},this.props.helpmessage)),	
 			E(loadSaveButtons,this.props),E(markupButtons,{togglePreview:this.props.togglePreview}),
 			E("button",{onClick:this.prevpage},"Prev"),			
@@ -121,6 +121,8 @@ var Controls=React.createClass({
 	}
 })
 var styles={
+	container:{right:16,width:110,zIndex:100,
+			background:"silver",position:"absolute",opacity:0.8},
 	note:{fontSize:"50%"},
 	warnings:{fontSize:"50%"},
 	elapse:{fontSize:"50%"}

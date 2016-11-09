@@ -41,34 +41,6 @@ const Maincomponent = React.createClass({
 		registerGetter("setcontent",this.setcontent);
 		registerGetter("getpagetext",this.getPageText);
 	}
-  ,getNextPage:function(){
-    const p=this.state.pageid;
-    if (!p)return;
-    const m=p.match(/(\d+)([abcd])/);
-    if (!m) return ;
-    if (m[2]=="d") {
-      pageid=(parseInt(m[1],10)+1)+"a";
-    } else {
-      pageid=m[1]+String.fromCharCode(m[2].charCodeAt(0)+1);
-    }
-    return pageid;    
-  }
-  ,getPrevPage:function(){
-    const p=this.state.pageid;
-    if (!p)return;
-    const m=p.match(/(\d+)([abcd])/);
-    if (!m) return ;
-    if (m[2]=="a") {
-      if (m[1]!="1") {
-          pageid=(parseInt(m[1],10)-1)+"d";        
-      } else {
-        pageid=p;
-      }
-    } else {
-      pageid=m[1]+String.fromCharCode(m[2].charCodeAt(0)-1);
-    }
-    return pageid;
-  }
   ,setPreviewPage:function(pageid){
     const preview=this.getPageText(pageid,this.state.data);
     var m=rule.getPDFPage(pageid,this.state.fn);
@@ -76,12 +48,12 @@ const Maincomponent = React.createClass({
     this.setState({preview});
   }
   ,nextpage:function(){
-    const pageid=this.getNextPage();
+    const pageid=rule.getNextPage(this.state.pageid);
     if (this.state.preview) return this.setPreviewPage(pageid);
     this.prepareCM(this.getPageStartIndex(pageid));
   }
   ,prevpage:function(){
-    const pageid=this.getPrevPage();
+    const pageid=rule.getPrevPage(this.state.pageid);
     if (this.state.preview) return this.setPreviewPage(pageid);
     this.prepareCM(this.getPageStartIndex(pageid));
   }
@@ -163,10 +135,10 @@ const Maincomponent = React.createClass({
   }
 	,onCursorActivity:function(cm) {
 		var pos=cm.getCursor();
-		var pageid=rule.getPageByLine(pos.line);
+		var pageid=rule.getPageByLine(pos.line)[1];
 
 		if (pos.line!==this.prevline) {
-			if (this.prevline>-1) rule.markLine(this.prevline,true);
+			if (this.prevline>-1) rule.markLine(this.prevline);
 			if (this.state.pageid!==pageid) {
 				var m=rule.getPDFPage(pageid,this.state.fn);
 				if(m) this.updatepdfpage(pageid,m);
@@ -179,11 +151,22 @@ const Maincomponent = React.createClass({
 		action("footnote",footnote);
 		this.prevline=pos.line;
 	}
-	,onChange:function(){
+  ,updatePBMarker:function(obj){
+    if (!obj)return;
+    const breakline=(obj.removed.length==1 &&obj.removed[0]==""
+      &&obj.text.length==2&&obj.text.join("")=="") ;
+    const joinline=(obj.text.length==1 &&obj.text[0]==""
+      &&obj.removed.length==2&&obj.removed.join("")=="") ;;
+    if (breakline || joinline) {
+      const pbline=rule.getPageByLine(obj.from.line)[0];
+      rule.markLine(pbline,true);
+    }
+  }
+	,onChange:function(cm,chobj){
 		if (!this.state.dirty && this.doc.getValue()!==this.state.data) {//setcontent will trigger onchange
 			this.setState({dirty:true});
 		}
-
+    this.updatePBMarker(chobj);
 		clearTimeout(this.timer1);
 		this.timer1=setTimeout(function(){
 			var warningcount=rule.validateMark(this.doc.getValue());	

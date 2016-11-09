@@ -1,4 +1,3 @@
-/* kangxi preview*/
 const React=require("react");
 const ReactDOM=require("react-dom");
 const E=React.createElement;
@@ -37,7 +36,6 @@ const Preview=React.createClass({
 			} else if (this.isNonChar(code)){
 				count++;
 			}
-
 			i++;count--;
 		}
 		return str.substr(0,i);
@@ -59,17 +57,15 @@ const Preview=React.createClass({
 		}
 		return c;
 	}
-
 	,parseText:function(str){
 		var lines=str.split("\n");
 		var parts=[],part,offset=0,i,linestart=[],linecount=0;
 
 		const removeTag=function(t){
-			t=t.replace(/[─「」，、．；《》：。〈〉\n]/g,"");
+			t=t.replace(/[─「」，、．；《》：。〈〉\n㊣]/g,"");
 			t=t.replace(/\%\d+\.\d+/g,"");
 			return t;
 		}
-
 		for (i=0;i<lines.length-1;i++) {
 			linestart.push(linecount)
 			linecount+=lines[i].length+1;
@@ -95,7 +91,6 @@ const Preview=React.createClass({
 				part.push(["z",removeTag(z),linestart[i]+previdx]);
 			}
 			part.push(["br"]);
-
 			parts=parts.concat(part);
 		}
 		return parts;

@@ -1,16 +1,4 @@
-/*
-usable prefix
-@
-$
-%
-*
-+
-# foot note
-~ page break
-^ paragraph
-*/
 /* convert simple markup to tag */
-/* give warning for */
 var PBLINE=[];
 var initpage="";
 const fs=require("ksana2015-proofreader").socketfs;
@@ -70,21 +58,32 @@ var createMarker=function(classname,tag) {
 		element.onclick=onTagClick;
 		return element;
 }
-
+const getpagesize=function(doc,i){
+	const max=doc.lineCount();
+	var j=i+1,minus=0;
+	while (j<max) {
+		var line=doc.getLine(j);
+		if (line[0]=="~") break;
+		if (line[0]=="^") minus++;
+		j++;
+	}
+	return j-i-minus;
+}
 var markLine=function(i,rebuild) {
 		if (i>doc.lineCount())return;
 		var M=doc.findMarks({line:i,ch:0},{line:i,ch:65536});
 		M.forEach(function(m){m.clear()});
 		var line=doc.getLine(i);
-		var dirty=false;
 		line.replace(/~(\d+[abcd])/g,function(m,pg,idx){
-			var element=createMarker("pbmarker",pg);
+			const pagesize=getpagesize(doc,i);
+			const pgerror=pagesize==11?"":"_error";
+			var element=createMarker("pbmarker"+pgerror,pg);
 			var marker=doc.markText({line:i,ch:idx},{line:i,ch:idx+m.length},
 				{clearOnEnter:true,replacedWith:element});
 			element.marker=marker;
 		});
 
-		line.replace(/(\^.*?)/g,function(m,m1,idx){
+		line.replace(/\^(.+)/g,function(m,m1,idx){
 			var element=createMarker("title",m1);
 			var marker=doc.markText({line:i,ch:idx},{line:i,ch:idx+m.length},
 				{clearOnEnter:true,replacedWith:element});
@@ -107,10 +106,8 @@ var markLine=function(i,rebuild) {
 			element.marker=marker;
 		});
 
-
-
 		setTimeout(function(){
-			if (rebuild && dirty) buildPBLINE();
+			if (rebuild) buildPBLINE();
 		},100);//<pb id="1.2b"/>
 	}
 
@@ -134,7 +131,7 @@ var buildPBLINE=function() {
 		PBLINE=[];
 		for (var i=0;i<marks.length;i++) {
 			var m=marks[i];
-			if (m.replacedWith.className=="pbmarker") {
+			if (m.replacedWith.className.substr(0,8)=="pbmarker") {
 				var pos=m.find();
 				PBLINE.push([pos.from.line,m.replacedWith.innerHTML]);
 			}
@@ -152,14 +149,14 @@ var setDoc=function(_doc){
 	doc=_doc;
 }
 var getPageByLine=function(line) {
-	if (!PBLINE.length)return;
+	if (!PBLINE.length)return ["",0];
 		for (var i=1;i<PBLINE.length;i++) {
 			var pbline=PBLINE[i];
 			if (pbline[0]>line) {
-				return PBLINE[i-1][1];
+				return PBLINE[i-1];
 			}
 		}
-		return PBLINE[PBLINE.length-1][1];//default
+		return PBLINE[PBLINE.length-1];//default
 }
 
 var getFootnote=function(str,pg){
@@ -170,14 +167,14 @@ var getFootnote=function(str,pg){
 	return "";
 }
 var setHotkeys=function(cm){
-		cm.setOption("extraKeys", {
-	  	"Ctrl-S": function(cm) {
-	  		action("savefile");
-	  	},
-	  	"Ctrl-M":function(cm){
-	  		action("nextpage");
-	  	}  	
-	  });
+	cm.setOption("extraKeys", {
+  	"Ctrl-S": function(cm) {
+  		action("savefile");
+  	},
+  	"Ctrl-M":function(cm){ //cannot captured in preview mode
+  		action("nextpage");
+  	}  	
+  });
 }
 const onBeforeChange=function(){
 
@@ -185,6 +182,33 @@ const onBeforeChange=function(){
 const validateMark=function(){
 
 }
+const getNextPage=function(p){//1c=>1d, 1d=>2a 
+  if (!p)return;
+  const m=p.match(/(\d+)([abcd])/);
+  if (!m) return ;
+  if (m[2]=="d") {
+    pageid=(parseInt(m[1],10)+1)+"a";
+  } else {
+    pageid=m[1]+String.fromCharCode(m[2].charCodeAt(0)+1);
+  }
+  return pageid;    
+}
+const getPrevPage=function(p){ //2b=>2a, 2a=>1d
+  if (!p)return;
+  const m=p.match(/(\d+)([abcd])/);
+  if (!m) return ;
+  if (m[2]=="a") {
+    if (m[1]!="1") {
+        pageid=(parseInt(m[1],10)-1)+"d";        
+    } else {
+      pageid=p;
+    }
+  } else {
+    pageid=m[1]+String.fromCharCode(m[2].charCodeAt(0)-1);
+  }
+  return pageid;
+}
 var helpmessage="";
 module.exports={markAllLine,markLine,initpage,setDoc,onBeforeChange,validateMark
-,getPageByLine,init,getFootnote,setHotkeys,helpmessage,getPDFPage};
+,getPageByLine,init,getFootnote,setHotkeys,helpmessage,getPDFPage
+,getNextPage,getPrevPage};
