@@ -11,15 +11,23 @@
 
 .pinpoint{background-color:red;color:yellow;}
 
-.wh {
-	font-size:100%;
+.preview_shu {
+  font-size:70%;
+  border:solid 1px red;
+  border-radius: 5px;
+  color:brown;
+}
+.preview_big {
+	font-size:68%;
 }
 
 .v {writing-mode: vertical-lr;
 		cursor:pointer;
     -webkit-writing-mode: vertical-lr;
-    font-size:25px;
+    font-size:48px;
     height:1920;
+    padding-top:20px;
+    padding-right:50px;
     overflow-y:auto;
 }
 .warichu {
@@ -80,30 +88,3 @@
 .warichu22::after{content:"　　　　　　　　　　　"}
 .warichu23::after{content:"　　　　　　　　　　　 "}
 .warichu24::after{content:"　　　　　　　　　　　　"}
-.warichu25::after{content:"　　　　　　　　　　　　 "}
-.warichu26::after{content:"　　　　　　　　　　　　　"}
-.warichu27::after{content:"　　　　　　　　　　　　　 "}
-.warichu28::after{content:"　　　　　　　　　　　　　　"}
-.warichu29::after{content:"　　　　　　　　　　　　　　 "}
-.warichu30::after{content:"　　　　　　　　　　　　　　　"}
-.warichu31::after{content:"　　　　　　　　　　　　　　　 "}
-.warichu32::after{content:"　　　　　　　　　　　　　　　　"}
-.warichu33::after{content:"　　　　　　　　　　　　　　　　 "}
-.warichu34::after{content:"　　　　　　　　　　　　　　　　　"}
-.warichu35::after{content:"　　　　　　　　　　　　　　　　　 "}
-.warichu36::after{content:"　　　　　　　　　　　　　　　　　　"}
-.warichu37::after{content:"　　　　　　　　　　　　　　　　　　 "}
-.warichu38::after{content:"　　　　　　　　　　　　　　　　　　　"}
-.warichu39::after{content:"　　　　　　　　　　　　　　　　　　　 "}
-.warichu40::after{content:"　　　　　　　　　　　　　　　　　　　　"}
-.warichu41::after{content:"　　　　　　　　　　　　　　　　　　　　 "}
-.warichu42::after{content:"　　　　　　　　　　　　　　　　　　　　　"}
-.warichu43::after{content:"　　　　　　　　　　　　　　　　　　　　　 "}
-.warichu44::after{content:"　　　　　　　　　　　　　　　　　　　　　　"}
-.warichu45::after{content:"　　　　　　　　　　　　　　　　　　　　　　 "}
-.warichu46::after{content:"　　　　　　　　　　　　　　　　　　　　　　　"}
-.warichu47::after{content:"　　　　　　　　　　　　　　　　　　　　　　　 "}
-.warichu48::after{content:"　　　　　　　　　　　　　　　　　　　　　　　　"}
-.warichu49::after{content:"　　　　　　　　　　　　　　　　　　　　　　　　 "}
-.warichu50::after{content:"　　　　　　　　　　　　　　　　　　　　　　　　　"}
-

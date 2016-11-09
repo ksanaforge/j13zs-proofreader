@@ -8,35 +8,15 @@ const Preview=React.createClass({
 	getInitialState:function(){
 		const parts=this.parseText(this.props.data);
 		return {parts};
-/*
-		return {parts:[
-				["z","林傳韓生推詩之意而爲內外傳數萬言其語頗與齊魯閒殊然其歸一也"+
-"　又少也顏延之庭誥文選書務一不尚煩密何承天答顏永嘉書竊願吾子舍兼而遵一也"+
-"　又增韻純也易繫辭天下之動貞夫一老子道德經天得一以淸地得一以寧"],
-				
-				["br"],
-				["wh","一"],
-				["an"],
-				["wh","弌"],
-				["z","唐韻韻會於悉切集韻正韻益悉切𡘋漪入聲"
-				+"說文惟初大始道立於一造分天地化成萬物廣韻數之始也"
-				+"物之極也易繫辭天一地二老子道德經道生一一生二　"
-				+"又廣韻同也禮樂記禮樂𠛬政其極一也史記儒"],
-				
-				["br"],
-				["wh","　　一部"],
-				
-				["br"],
-				["wh","　子集上" ],
-				
-				["br"],
-				["wh","康熙字典"]
-
-			]}
-*/
 	}
 	,contextTypes:{
 		action:PT.func
+	}
+	,componentWillReceiveProps:function(nextProps){
+		if (nextProps.data!==this.props.data) {
+			const parts=this.parseText(nextProps.data);
+			this.setState({parts});
+		}
 	}
 	,isNonChar:function(code){
 		if (code>=0x3000&&code<=0x303f) return true;//cjk puncuation
@@ -81,18 +61,15 @@ const Preview=React.createClass({
 	}
 
 	,parseText:function(str){
-		var lines=str.split("/");
+		var lines=str.split("\n");
 		var parts=[],part,offset=0,i,linestart=[],linecount=0;
-		const getZ=function(z,line,startch){
-			z=z.replace(/[─「」，、．；《》：。〈〉\n]/g,"");
-			z=z.replace(/#\d+\.\d+/g,"");
 
-			if (z=="㉆") {
-				return ["an","㉆",line,startch];
-			} else {
-				return ["z",z,line,startch];
-			}
+		const removeTag=function(t){
+			t=t.replace(/[─「」，、．；《》：。〈〉\n]/g,"");
+			t=t.replace(/\%\d+\.\d+/g,"");
+			return t;
 		}
+
 		for (i=0;i<lines.length-1;i++) {
 			linestart.push(linecount)
 			linecount+=lines[i].length+1;
@@ -105,13 +82,17 @@ const Preview=React.createClass({
 			var previdx=0,z;
 			line.replace(/\{(.*?)\}/g,function(m,m1,idx){
 				z=line.substring(previdx,idx);
-				if (idx) part.push(getZ(z,linestart[i]+previdx));
-				part.push(["wh",m1,linestart[i]+idx]);
+				if (idx) part.push(["z",removeTag(z),linestart[i]+previdx]);
+				if (m1=="■") {
+					part.push(["shu","疏",linestart[i]+idx])
+				} else {
+					part.push(["big",removeTag(m1),linestart[i]+idx]);
+				}
 				previdx=idx+m.length;
 			});
 			z=line.substr(previdx).trim();
 			if (previdx<line.length) {
-				part.push(getZ(z,linestart[i]+previdx));
+				part.push(["z",removeTag(z),linestart[i]+previdx]);
 			}
 			part.push(["br"]);
 
@@ -123,14 +104,14 @@ const Preview=React.createClass({
 		var out=[];
 		const type=part[0],text=part[1],start=part[2];
 		var cls={"data-start":start};
-		if (type==="wh") {
-			cls.className="wh";
+		if (type==="big") {
+			cls.className="preview_big";
 			out.push(E("span",cls,text));
 		} else if (type==="br") {
 			out.push(E("br"));
-		} else if (type==="an") {
-			cls.className="an";
-			out.push(E("span",cls,"古文"));
+		} else if (type==="shu") {
+			cls.className="preview_shu";
+			out.push(E("span",cls,"疏"));
 		} else if (type==="z") {
 			var w=Math.floor(this.chcount(text)/2);
 			if (this.chcount(text)%2==1) w++;
@@ -149,7 +130,7 @@ const Preview=React.createClass({
 	
 		ruler.style.top=e.clientY+3;//make sure the underlay is clickable
 	}
-	,guestCharPos:function(cheight,x,y,w,h,side){
+	,guessCharPos:function(cheight,x,y,w,h,side){
 		const ccount=h/cheight;
 		var c=Math.floor((y/h) * ccount);
 		if (side) c+=ccount;
@@ -167,9 +148,9 @@ const Preview=React.createClass({
 
 		if (!nod.dataset.start) nod=nod.parentElement;
 
-		const ch=this.guestCharPos(cheight,e.clientX-nod.offsetLeft,
+		const ch=this.guessCharPos(cheight,e.clientX-nod.offsetLeft,
 			e.clientY-nod.offsetTop,nod.offsetWidth,nod.offsetHeight,side);
-
+		if (!nod.dataset.start)return;
 		const start=parseInt(nod.dataset.start,10);
 		const text=this.props.data.substr(start);
 		const chpos=this.getTextFirstCh(text,ch+2).length;

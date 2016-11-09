@@ -91,16 +91,17 @@ var markLine=function(i,rebuild) {
 			element.marker=marker;
 		});
 
-
-		line.replace(/\{(.+?)\}/g,function(m,m1,idx){
-			var element=createMarker("big",m1);
-			//TODO do not mark inline corration
+		line.replace(/%(\d+)\.(\d+)/g,function(m,m1,m2,idx){
+			var element=createMarker("corration",m1+"."+m2);
 			var marker=doc.markText({line:i,ch:idx},{line:i,ch:idx+m.length},
 				{clearOnEnter:true,replacedWith:element});
 			element.marker=marker;
 		});
-		line.replace(/%(\d+)\.(\d+)/g,function(m,m1,m2,idx){
-			var element=createMarker("corration",m1+"."+m2);
+
+		line.replace(/\{(.+?)\}/g,function(m,big,idx){
+			big=big.replace(/%(\d+)\.(\d+)/g,"");
+			var element=createMarker("big",big);
+			//TODO do not mark inline corration
 			var marker=doc.markText({line:i,ch:idx},{line:i,ch:idx+m.length},
 				{clearOnEnter:true,replacedWith:element});
 			element.marker=marker;
@@ -172,7 +173,10 @@ var setHotkeys=function(cm){
 		cm.setOption("extraKeys", {
 	  	"Ctrl-S": function(cm) {
 	  		action("savefile");
-	  	}
+	  	},
+	  	"Ctrl-M":function(cm){
+	  		action("nextpage");
+	  	}  	
 	  });
 }
 const onBeforeChange=function(){
@@ -181,6 +185,6 @@ const onBeforeChange=function(){
 const validateMark=function(){
 
 }
-var helpmessage="#footnote, ^paragraph";
+var helpmessage="";
 module.exports={markAllLine,markLine,initpage,setDoc,onBeforeChange,validateMark
 ,getPageByLine,init,getFootnote,setHotkeys,helpmessage,getPDFPage};

@@ -33,26 +33,72 @@ const Maincomponent = React.createClass({
 		fileio.init();
 		listen("loaded",this.loaded,this);
 		listen("saved",this.saved,this);
+    listen("nextpage",this.nextpage,this);
+    listen("prevpage",this.prevpage,this);
 		listen("nextwarning",this.nextwarning,this);
 		listen("pinpoint",this.pinpoint,this);
 		registerGetter("getcontent",this.getcontent);
 		registerGetter("setcontent",this.setcontent);
 		registerGetter("getpagetext",this.getPageText);
 	}
+  ,getNextPage:function(){
+    const p=this.state.pageid;
+    if (!p)return;
+    const m=p.match(/(\d+)([abcd])/);
+    if (!m) return ;
+    if (m[2]=="d") {
+      pageid=(parseInt(m[1],10)+1)+"a";
+    } else {
+      pageid=m[1]+String.fromCharCode(m[2].charCodeAt(0)+1);
+    }
+    return pageid;    
+  }
+  ,getPrevPage:function(){
+    const p=this.state.pageid;
+    if (!p)return;
+    const m=p.match(/(\d+)([abcd])/);
+    if (!m) return ;
+    if (m[2]=="a") {
+      if (m[1]!="1") {
+          pageid=(parseInt(m[1],10)-1)+"d";        
+      } else {
+        pageid=p;
+      }
+    } else {
+      pageid=m[1]+String.fromCharCode(m[2].charCodeAt(0)-1);
+    }
+    return pageid;
+  }
+  ,setPreviewPage:function(pageid){
+    const preview=this.getPageText(pageid,this.state.data);
+    var m=rule.getPDFPage(pageid,this.state.fn);
+    this.updatepdfpage(pageid,m);
+    this.setState({preview});
+  }
+  ,nextpage:function(){
+    const pageid=this.getNextPage();
+    if (this.state.preview) return this.setPreviewPage(pageid);
+    this.prepareCM(this.getPageStartIndex(pageid));
+  }
+  ,prevpage:function(){
+    const pageid=this.getPrevPage();
+    if (this.state.preview) return this.setPreviewPage(pageid);
+    this.prepareCM(this.getPageStartIndex(pageid));
+  }
 	,getPageStartIndex:function(pageid){
 		const start="~"+pageid||this.state.pageid;
 		var index=this.getcontent().indexOf(start);
 		return index;
 	}
-	,getPageText:function(){
-		const content=this.getcontent();
-		const start="~"+this.state.pageid;
-		var from=content.indexOf(start);
-		from+=start.length+1;
-		var to=content.indexOf("~"+(parseInt(this.state.pageid,10)+1));
-		if (to==-1) to=content.length; 
-		return content.substring(from,to);
-	}
+  ,getPageText:function(pageid,content){
+    content=content||this.getcontent();
+    const start="~"+(pageid||this.state.pageid);
+    var from=content.indexOf(start);
+    from+=start.length+1;
+    var to=content.indexOf("~",from+1);
+    if (to==-1) to=content.length; 
+    return content.substring(from,to);
+  }
 	,componentWillUnmount:function(){
 		unregisterGetter("getcontent");
 		unregisterGetter("setcontent");
@@ -112,6 +158,9 @@ const Maincomponent = React.createClass({
 		this.cm.scrollIntoView({line:next+5,ch:0});
 		this.doc.setCursor({line:next,ch:0});
 	}
+  ,updatepdfpage:function(pageid,m){
+    this.setState({pdffn:m.pdffn,page:m.page,pageid,left:m.left,top:m.top});
+  }
 	,onCursorActivity:function(cm) {
 		var pos=cm.getCursor();
 		var pageid=rule.getPageByLine(pos.line);
@@ -120,9 +169,7 @@ const Maincomponent = React.createClass({
 			if (this.prevline>-1) rule.markLine(this.prevline,true);
 			if (this.state.pageid!==pageid) {
 				var m=rule.getPDFPage(pageid,this.state.fn);
-				if (m) {
-          this.setState({pdffn:m.pdffn,page:m.page,pageid,left:m.left,top:m.top});
-        }
+				if(m) this.updatepdfpage(pageid,m);
 				else this.setState({pageid});
 			}
 		}
@@ -173,12 +220,12 @@ const Maincomponent = React.createClass({
   		,togglePreview:this.togglePreview
   		,helpmessage:rule.helpmessage}),
     	E("div",{style:{display:"flex",flexDirection:"row"}},
-      	E("div",{style:{flex:6}},
-    			E(PDFViewer,{ref:"pdf", style:styles.image,rwidth:0.5,
+      	E("div",{style:{flex:45}},
+    			E(PDFViewer,{ref:"pdf", style:styles.image,rwidth:0.45,
             left:this.state.left,top:this.state.top,
     				page:this.state.page,pdffn:this.state.pdffn,scale:2})
     			)
-    		,E("div",{style:{flex:6}},this.TextViewer())
+    		,E("div",{style:{flex:100}},this.TextViewer())
     	 )
     	)
   }

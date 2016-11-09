@@ -76,7 +76,7 @@ var loadSaveButtons=React.createClass({
 		if (this.props.preview)return E("span");
 		return E("div",{},
 			E("button",{onClick:this.loadfile,disabled:this.props.dirty},"load"),
-			E("input",{size:8,onKeyPress:this.onKeyPress,
+			E("input",{size:7,onKeyPress:this.onKeyPress,
 					value:this.state.fn,onChange:this.onInput,disabled:this.props.dirty}),
 			E("button",{onClick:this.savefile,disabled:!this.props.dirty},"save"),
 			E("span",{style:styles.elapse},this.state.elapse,"secs")
@@ -86,6 +86,7 @@ var loadSaveButtons=React.createClass({
 
 var Controls=React.createClass({
 	contextTypes:{
+		action:PT.func,
 		getter:PT.func,
     listen:PT.func,
     unlistenAll:PT.func
@@ -102,11 +103,19 @@ var Controls=React.createClass({
 	,footnote:function(note){
 		this.setState({note});
 	}
+	,nextpage:function(){
+		this.context.action("nextpage");
+	}
+	,prevpage:function(){
+		this.context.action("prevpage");
+	}
 	,render:function(){
-		return E("div",{style:{right:20,width:200,zIndex:100,
+		return E("div",{style:{right:16,width:110,zIndex:100,
 			background:"silver",position:"absolute"}},
 			E("div",{},E("span",{style:styles.note},this.props.helpmessage)),	
 			E(loadSaveButtons,this.props),E(markupButtons,{togglePreview:this.props.togglePreview}),
+			E("button",{onClick:this.prevpage},"Prev"),			
+			E("button",{onClick:this.nextpage},"Next"),			
 			E("div",{},E("span",{style:styles.note},this.state.note))
 		);
 	}
