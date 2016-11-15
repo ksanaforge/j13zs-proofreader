@@ -64,7 +64,7 @@ const getpagesize=function(doc,i){
 	while (j<max) {
 		var line=doc.getLine(j);
 		if (line[0]=="~") break;
-		if (line[0]=="^") minus++;
+		if (line[0]=="^") minus++; //article tag
 		j++;
 	}
 	return j-i-minus;
@@ -82,9 +82,9 @@ var markLine=function(i,rebuild) {
 				{clearOnEnter:true,replacedWith:element});
 			element.marker=marker;
 		});
-
+		//article tag
 		line.replace(/\^(.+)/g,function(m,m1,idx){
-			var element=createMarker("title",m1);
+			var element=createMarker("article",m1);
 			var marker=doc.markText({line:i,ch:idx},{line:i,ch:idx+m.length},
 				{clearOnEnter:true,replacedWith:element});
 			element.marker=marker;
@@ -126,6 +126,7 @@ var prevpageid=function(pageid){
 }
 var buildPBLINE=function() {
 		//var t=new Date();
+		console.log("buildPBLINE")
 		var marks=doc.getAllMarks();
 		if (!marks.length)return;
 		PBLINE=[];

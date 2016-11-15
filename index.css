@@ -9,16 +9,16 @@
 .big {font-size:120%;}
 .corration{font-weight:700;position:absolute;color:darkgreen;font-size:50%;}
 .warning {background:red;width:100%;color:yellow;}
-.title {color:blue}
+.article {color:black;background:lightgreen;}
 .pinpoint{background-color:brown;color:yellow;}
 
-.preview_shu {
+.warichu_shu {
   font-size:70%;
   border:solid 1px brown;
   border-radius: 5px;
   color:brown;
 }
-.preview_big {
+.warichu_big {
 	font-size:68%;
 }
 

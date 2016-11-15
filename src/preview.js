@@ -100,12 +100,12 @@ const Preview=React.createClass({
 		const type=part[0],text=part[1],start=part[2];
 		var cls={"data-start":start};
 		if (type==="big") {
-			cls.className="preview_big";
+			cls.className="warichu_big";
 			out.push(E("span",cls,text));
 		} else if (type==="br") {
 			out.push(E("br"));
 		} else if (type==="shu") {
-			cls.className="preview_shu";
+			cls.className="warichu_shu";
 			out.push(E("span",cls,"疏"));
 		} else if (type==="z") {
 			var w=Math.floor(this.chcount(text)/2);

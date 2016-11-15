@@ -9,7 +9,7 @@ const markupButtons=React.createClass({
     listen:PT.func
 	}	
 	,render:function(){
-		return E("div",{},
+		return E("span",{},
 			E("button",{onClick:this.props.togglePreview},"preview")
 		)	
 	}
@@ -110,10 +110,28 @@ var Controls=React.createClass({
 	,prevpage:function(){
 		this.context.action("prevpage");
 	}
+	,gounicode:function(){
+		var str=this.props.charAtCursor;
+		var c=str.charCodeAt(0);
+		var s=str.substr(0,1);
+  	if (c>0xd800 && c<0xdfff) {
+  		s=str.substr(0,2);
+  	}
+		window.open("http://kangxi.adcs.org.tw/kangxizidian/#"+s);
+	}
+	,getUnicode:function(str){
+		var c=str.charCodeAt(0);
+  	if (c>0xd800 && c<0xdfff) {
+  		const c2=str.charCodeAt(1);
+  		c=0x10000+ (c & 0x3ff) * 1024 + (c2&0x3ff);
+  	}
+  	return c.toString(16).toUpperCase();	
+	}	
 	,render:function(){
 		return E("div",{style:styles.container},
 			E("div",{},E("span",{style:styles.note},this.props.helpmessage)),	
 			E(loadSaveButtons,this.props),E(markupButtons,{togglePreview:this.props.togglePreview}),
+			E("span",{onClick:this.gounicode,style:styles.unicode},this.getUnicode(this.props.charAtCursor)),
 			E("button",{onClick:this.prevpage},"Prev"),			
 			E("button",{onClick:this.nextpage},"Next"),			
 			E("div",{},E("span",{style:styles.note},this.state.note))
@@ -124,6 +142,7 @@ var styles={
 	container:{right:16,width:110,zIndex:100,
 			background:"silver",position:"absolute",opacity:0.8},
 	note:{fontSize:"50%"},
+	unicode:{fontSize:"60%",cursor:"pointer"},
 	warnings:{fontSize:"50%"},
 	elapse:{fontSize:"50%"}
 }

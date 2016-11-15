@@ -15,7 +15,7 @@ const Maincomponent = React.createClass({
 	//	var m=new Magnifier();
 		setRule(rule);
 		return {data:"",pageid:rule.initpage,dirty:false,warningcount:0
-		,pdffn:"",page:0,preview:null};
+		,pdffn:"",page:0,preview:null,charAtCursor:""};
 	}
 	,prevline:-1
   ,childContextTypes: {
@@ -133,9 +133,21 @@ const Maincomponent = React.createClass({
   ,updatepdfpage:function(pageid,m){
     this.setState({pdffn:m.pdffn,page:m.page,pageid,left:m.left,top:m.top});
   }
+  ,showUnicode:function(str){
+  	this.setState({charAtCursor:str.substring(0,2)});
+  }
 	,onCursorActivity:function(cm) {
+		clearTimeout(this.ca);
+		this.ca=setTimeout(function(){
+
 		var pos=cm.getCursor();
 		var pageid=rule.getPageByLine(pos.line)[1];
+		var index=cm.indexFromPos(pos);
+		var text=cm.getValue();
+
+		var str=text.substr(index-5,10);
+
+		this.showUnicode(text.substr(index,2));
 
 		if (pos.line!==this.prevline) {
 			if (this.prevline>-1) rule.markLine(this.prevline);
@@ -145,11 +157,12 @@ const Maincomponent = React.createClass({
 				else this.setState({pageid});
 			}
 		}
-		var index=cm.indexFromPos(pos);
-		var str=cm.getValue().substr(index-5,10);
-		var footnote=rule.getFootnote(str,pageid);
-		action("footnote",footnote);
+		//var footnote=rule.getFootnote(str,pageid);
+		//action("footnote",footnote);
 		this.prevline=pos.line;
+
+		}.bind(this),500);
+
 	}
   ,updatePBMarker:function(obj){
     if (!obj)return;
@@ -191,7 +204,7 @@ const Maincomponent = React.createClass({
 			return E(Preview,{data:this.state.preview});
 		} else {
 			return E(CodeMirror,{ref:"cm",value:this.state.data,
-	      		onChange:this.onChange,
+	      		onChange:this.onChange,theme:"ambiance",
 	      		onBeforeChange:this.onBeforeChange,
   	    		onCursorActivity:this.onCursorActivity});
 		}
@@ -200,6 +213,7 @@ const Maincomponent = React.createClass({
   	return E("div",{},E(Controls,{dirty:this.state.dirty,
   		preview:!!this.state.preview,
   		warnings:this.state.warningcount+" warnings"
+  		,charAtCursor:this.state.charAtCursor
   		,togglePreview:this.togglePreview
   		,helpmessage:rule.helpmessage}),
     	E("div",{style:{display:"flex",flexDirection:"row"}},
