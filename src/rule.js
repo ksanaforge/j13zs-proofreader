@@ -6,9 +6,10 @@ var doc=null;
 var footnote=null;
 const {action}=require("ksana2015-proofreader").model;
 const pdfs={
-	"1":[0,103]
+	"1":[0,102],
+	"2":[103]
 };
-const starts={"1a":15};
+const starts={"1a":15,"1b":1};
 const leftTopFromSide=function(side){
 	var left=-400,top=-50;
 	if (side==1){
